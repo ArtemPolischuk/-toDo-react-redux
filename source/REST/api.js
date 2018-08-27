@@ -1,4 +1,4 @@
-import { MAIN_URL ,ROOT_URL } from './config';
+import { MAIN_URL, TOKEN } from './config';
 
 export const api = {
     async fetchTasks () {
@@ -13,5 +13,25 @@ export const api = {
         const { data: tasks } = await response.json();
 
         return tasks;
+    },
+    async createTask(newTaskMessage) {
+        const response = await fetch(MAIN_URL, {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                Authorization: TOKEN,
+            },
+            body: JSON.stringify({
+                newTaskMessage,
+            }),
+        });
+
+        if (response.status !== 200) {
+            throw new Error('Create were not loaded');
+        }
+
+        const { data: task } = await response.json();
+
+        return task;
     },
 };

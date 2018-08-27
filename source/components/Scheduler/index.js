@@ -53,10 +53,22 @@ export default class Scheduler extends Component {
         } finally {
             this._setTasksFetchingState(false);
         }
-    }
+    };
 
-    _createTaskAsync = () => {
+    _createTaskAsync = async (newTaskMessage) => {
+        try {
+            this._setTasksFetchingState(true);
 
+            const task = await api.createTask(newTaskMessage);
+
+            this.setState((prevState) => ({
+                tasks: [task, ...prevState.tasks]
+            }));
+        } catch (error) {
+            console.log(error);
+        } finally {
+            this._setTasksFetchingState(false);
+        }
     }
 
     _updateTaskAsync = () => {
@@ -70,8 +82,15 @@ export default class Scheduler extends Component {
 
     }
     render () {
-        const { newTaskMessage, isSpinning } = this.state;
+        const { tasks, newTaskMessage, isSpinning } = this.state;
 
+        const tasksJSX = tasks.map((task) => (
+            <Task
+                { ...task }
+                _removeTaskAsync = { this._removeTaskAsync }
+                _updateTaskAsync = { this._updateTaskAsync }
+            />
+        ));
         return (
             <section className = { Styles.scheduler }>
                 <Spinner isSpinning = { isSpinning } />
@@ -102,15 +121,7 @@ export default class Scheduler extends Component {
                             </button>
                         </form>
                         <div className = 'overlay'>
-                            <Task
-                                _removeTaskAsync = { this._removeTaskAsync }
-                                _updateTaskAsync = { this._updateTaskAsync }
-                                completed = {false}
-                                favorite = {false}
-                                id = "123"
-                                key = ".$123"
-                                message = "Выполнить важную задачу (создано в конструкторе)."
-                            />
+                            { tasksJSX }
                         </div>
                     </section>
                     <footer>
