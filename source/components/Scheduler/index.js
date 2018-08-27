@@ -14,6 +14,7 @@ export default class Scheduler extends Component {
         tasksFilter: '',
         isTasksFetching: false,
         tasks: [],
+        isSpinning: false,
     }
 
     _updateTasksFilter = () => {
@@ -32,12 +33,26 @@ export default class Scheduler extends Component {
 
     }
 
-    _setTasksFetchingState = () => {
-
+    _setTasksFetchingState = (bool) => {
+        this.setState(() => ({
+            isSpinning: bool,
+        }));
     }
 
-    _fetchTasksAsync = () => {
+    _fetchTasksAsync = async () => {
+        try {
+            this._setTasksFetchingState(true);
 
+            const tasks = await api.fetchTasks();
+
+            this.setState(() => ({
+                tasks,
+            }));
+        } catch (error) {
+            console.log(error);
+        } finally {
+            this._setTasksFetchingState(false);
+        }
     }
 
     _createTaskAsync = () => {
@@ -55,11 +70,11 @@ export default class Scheduler extends Component {
 
     }
     render () {
-        const { newTaskMessage } = this.state;
+        const { newTaskMessage, isSpinning } = this.state;
 
         return (
             <section className = { Styles.scheduler }>
-                <Spinner />
+                <Spinner isSpinning = { isSpinning } />
                 <main>
                     <header>
                         <h1>
