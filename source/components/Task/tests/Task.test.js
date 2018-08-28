@@ -126,7 +126,7 @@ describe('Компонент Task:', () => {
             test('должно существовать', () => {
                 expect(result.state('newMessage')).toBeDefined();
             });
-            test('должно иметь значение из пропса message в качестве совего изначального значения', () => {
+            test('должно иметь значение из пропса message в качестве своего изначального значения', () => {
                 expect(result.state('newMessage')).toBe(props.message);
             });
         });

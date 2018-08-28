@@ -4,9 +4,13 @@ export const api = {
     async fetchTasks () {
         const response = await fetch(MAIN_URL, {
             method: 'GET',
+            headers: {
+                Authorization: TOKEN,
+            }
         });
 
         if (response.status !== 200) {
+            console.log(response);
             throw new Error('Tasks were not delivered');
         }
 
@@ -14,15 +18,15 @@ export const api = {
 
         return tasks;
     },
-    async createTask(newTaskMessage) {
+    async createTask (newTaskMessage) {
         const response = await fetch(MAIN_URL, {
             method: 'POST',
             headers: {
-                'content-type': 'application/json',
                 Authorization: TOKEN,
+                'content-type': 'application/json',
             },
             body: JSON.stringify({
-                newTaskMessage,
+                "message": newTaskMessage,
             }),
         });
 
@@ -34,4 +38,41 @@ export const api = {
 
         return task;
     },
+    async updateTask (newTask) {
+        const response = await fetch(MAIN_URL, {
+            method: 'PUT',
+            headers: {
+                Authorization: TOKEN,
+                'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+                newTask,
+            }),
+        });
+
+        if (response.status !== 200) {
+            throw new Error('task was not updated');
+        }
+
+        const { data: updateTask } = await response.json();
+
+        return updateTask;
+    },
+    async removeTask (id) {
+        const response = await fetch(`${MAIN_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: TOKEN,
+            }
+        });
+
+        if (response.status !== 204) {
+            throw new Error('Task was not deleted');
+        }
+
+        return null;
+    },
+    async completeAllTasks (tasks) {
+
+    }
 };
