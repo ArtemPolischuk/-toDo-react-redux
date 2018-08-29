@@ -91,11 +91,11 @@ export default class Scheduler extends Component {
         }
     };
 
-    _updateTaskAsync = async (update) => {
+    _updateTaskAsync = async (updateTask) => {
         try {
             this._setTasksFetchingState(true);
 
-            await api.updateTask(update);
+            await api.updateTask(updateTask);
         } catch (error) {
             console.log(error);
         } finally {

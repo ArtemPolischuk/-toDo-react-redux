@@ -38,7 +38,7 @@ export const api = {
 
         return task;
     },
-    async updateTask (newTask) {
+    async updateTask (updateTask) {
         const response = await fetch(MAIN_URL, {
             method: 'PUT',
             headers: {
@@ -46,7 +46,7 @@ export const api = {
                 'content-type': 'application/json',
             },
             body: JSON.stringify({
-                newTask,
+                updateTask,
             }),
         });
 
@@ -54,9 +54,9 @@ export const api = {
             throw new Error('task was not updated');
         }
 
-        const { data: updateTask } = await response.json();
+        const { data: updatedTask } = await response.json();
 
-        return updateTask;
+        return updatedTask;
     },
     async removeTask (id) {
         const response = await fetch(`${MAIN_URL}/${id}`, {

@@ -88,17 +88,37 @@ export default class Task extends PureComponent {
             event.preventDefault();
             this._cancelUpdatingTaskMessage();
         }
-    }
+    };
 
     _toggleTaskCompletedState = () => {
-        const { _updateTaskAsync } = this.props;
+        const { _updateTaskAsync, completed } = this.props;
 
-        _updateTaskAsync();
+        const taskModel = this._getTaskShape(this.props);
+        taskModel.completed = !completed;
+
+        _updateTaskAsync(taskModel);
+    };
+
+    _toggleTaskFavoriteState = () => {
+        const { _updateTaskAsync, favorite } = this.props;
+
+        const taskModel = this._getTaskShape(this.props);
+        taskModel.favorite = !favorite;
+
+        _updateTaskAsync(taskModel);
+    };
+
+    _removeTask = () => {
+
     }
     mock = () => {
 
     }
     render () {
+        // console.log(this._getTaskShape('',false,false,''));
+        const model = this._getTaskShape(this.props);
+        model.completed = !this.props.completed
+        console.log(model.completed);
         return (
             <li className = { Styles.task }>
                 <div className = { Styles.content }>
