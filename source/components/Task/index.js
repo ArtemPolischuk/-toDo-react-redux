@@ -109,16 +109,14 @@ export default class Task extends PureComponent {
     };
 
     _removeTask = () => {
+        const { _removeTaskAsync, id } = this.props;
 
+        _removeTaskAsync(id);
     }
     mock = () => {
 
     }
     render () {
-        // console.log(this._getTaskShape('',false,false,''));
-        const model = this._getTaskShape(this.props);
-        model.completed = !this.props.completed
-        console.log(model.completed);
         return (
             <li className = { Styles.task }>
                 <div className = { Styles.content }>
