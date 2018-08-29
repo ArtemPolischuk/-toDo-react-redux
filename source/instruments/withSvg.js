@@ -75,6 +75,7 @@ const decorateSvg = (
             const svgStyle = this._getSvgStyle();
             const enhanceableProps = this._getEnhanceableProps();
             const onClickAction = this.props.onClick || this._handleClick;
+            // const onClickAction = this.props.onClick && this._handleClick;
 
             return (
                 <div

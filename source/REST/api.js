@@ -45,9 +45,9 @@ export const api = {
                 Authorization: TOKEN,
                 'content-type': 'application/json',
             },
-            body: JSON.stringify({
-                updateTask,
-            }),
+            body: JSON.stringify(
+                [updateTask],
+            ),
         });
 
         if (response.status !== 200) {
