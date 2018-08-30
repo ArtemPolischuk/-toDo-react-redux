@@ -55,8 +55,8 @@ export const api = {
         }
 
         const { data: updatedTask } = await response.json();
-
-        return updatedTask;
+        console.log('done')
+        return updatedTask[0];
     },
     async removeTask (id) {
         const response = await fetch(`${MAIN_URL}/${id}`, {
@@ -69,10 +69,31 @@ export const api = {
         if (response.status !== 204) {
             throw new Error('Task was not deleted');
         }
-
-        return null;
     },
-    async completeAllTasks (tasks) {
+    async completeAllTasks (uncompletedTasks) {
+        await Promise.all(uncompletedTasks)
+            .then((tasks) => {
+                tasks.forEach(async (updateTask) => {
+                    // await api.updateTask(task)
 
+                    const response = await fetch(MAIN_URL, {
+                        method: 'PUT',
+                        headers: {
+                            Authorization: TOKEN,
+                            'content-type': 'application/json',
+                        },
+                        body: JSON.stringify(
+                            [updateTask],
+                        ),
+                    });
+
+                    if (response.status !== 200) {
+                        throw new Error('task was not updated');
+                    }
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }
 };

@@ -57,11 +57,7 @@ export default class Task extends PureComponent {
 
         this._setTaskEditingState(false);
 
-        const taskModel = this._getTaskShape(this.props);
-
-        taskModel.message = newMessage;
-
-        _updateTaskAsync(taskModel);
+        _updateTaskAsync(this._getTaskShape({ 'message': newMessage }));
     };
 
     _updateTaskMessageOnClick = () => {
@@ -92,7 +88,6 @@ export default class Task extends PureComponent {
         const { newMessage }  = this.state;
 
         if (enterKey) {
-            event.preventDefault();
             if (!newMessage.trim()) {
                 return null;
             }
@@ -100,7 +95,6 @@ export default class Task extends PureComponent {
         }
 
         if (escapeKey) {
-            event.preventDefault();
             this._cancelUpdatingTaskMessage();
         }
     };
@@ -108,20 +102,13 @@ export default class Task extends PureComponent {
     _toggleTaskCompletedState = () => {
         const { _updateTaskAsync, completed } = this.props;
 
-        const taskModel = this._getTaskShape(this.props);
-
-        taskModel.completed = !completed;
-
-        _updateTaskAsync(taskModel);
+        _updateTaskAsync(this._getTaskShape({ 'completed': !completed }));
     };
 
     _toggleTaskFavoriteState = () => {
         const { _updateTaskAsync, favorite } = this.props;
 
-        const taskModel = this._getTaskShape(this.props);
-        taskModel.favorite = !favorite;
-
-        _updateTaskAsync(taskModel);
+        _updateTaskAsync(this._getTaskShape({ 'favorite': !favorite }));
     };
 
     _removeTask = () => {
@@ -133,6 +120,7 @@ export default class Task extends PureComponent {
     render () {
         const { completed, favorite } = this.props;
         const { isTaskEditing, newMessage } = this.state;
+
         return (
             <li className = { Styles.task }>
                 <div className = { Styles.content }>

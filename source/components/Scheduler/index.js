@@ -6,7 +6,7 @@ import Task from '../Task';
 import Checkbox from '../../theme/assets/Checkbox';
 // Instruments
 import Styles from './styles.m.css';
-import { api } from '../../REST'; // ! Импорт модуля API должен иметь именно такой вид (import { api } from '../../REST')
+import { api } from '../../REST';
 
 export default class Scheduler extends Component {
     state = {
@@ -14,7 +14,7 @@ export default class Scheduler extends Component {
         tasksFilter: '',
         isTasksFetching: false,
         tasks: [],
-        isSpinning: false,
+        filteredTasks:[]
     }
 
     componentDidMount () {
@@ -45,7 +45,7 @@ export default class Scheduler extends Component {
 
     _setTasksFetchingState = (bool) => {
         this.setState(() => ({
-            isSpinning: bool,
+            isTasksFetching: bool,
         }));
     };
 
@@ -96,11 +96,13 @@ export default class Scheduler extends Component {
             this._setTasksFetchingState(true);
 
             const updatedTask = await api.updateTask(updateTask);
-            console.log(updatedTask);
-            // this.setState(({ tasks}) => ({
-            //     tasks: tasks.map((task) => task.id === updatedTask.id ? updatedTask: task)
-            // }))
-            this._fetchTasksAsync();
+
+            this.setState(({ tasks }) => ({
+                tasks: tasks.map((task) => task.id === updatedTask.id ?updatedTask : task),
+            }))
+
+            this.state.tasks.sort((a, b) => a.completed - b.completed )
+            // this._fetchTasksAsync();
         } catch (error) {
             console.log(error);
         } finally {
@@ -116,7 +118,7 @@ export default class Scheduler extends Component {
 
             this.setState(({ tasks }) => ({
                 tasks: tasks.filter((task) => task.id !== id),
-            }))
+            }));
         } catch (error) {
             console.log(error);
         } finally {
@@ -124,12 +126,29 @@ export default class Scheduler extends Component {
         }
     };
     _completeAllTasksAsync = async () => {
+        try {
+            if (this._getAllCompleted()) {
+                return null;
+            }
+            this._setTasksFetchingState(true);
 
+            const uncompletedTasks = this.state.tasks.filter((task) => !task.completed);
+
+            uncompletedTasks.map((task) => task.completed = true);
+
+            await api.completeAllTasks(uncompletedTasks);
+
+        } catch (error) {
+            console.log(error);
+        } finally {
+            this._setTasksFetchingState(false);
+        }
     };
     render () {
-        const { tasks, newTaskMessage, isSpinning } = this.state;
+        const { tasks, newTaskMessage, isTasksFetching, tasksFilter } = this.state;
 
-        const tasksJSX = tasks.map((task) => (
+        const tasksJSX = tasks.filter((task) => task.message.indexOf(tasksFilter) !== -1)
+            .map((task) => (
             <Task
                 { ...task }
                 key = { task.id }
@@ -139,7 +158,7 @@ export default class Scheduler extends Component {
         ));
         return (
             <section className = { Styles.scheduler }>
-                <Spinner isSpinning = { isSpinning } />
+                <Spinner isSpinning = { isTasksFetching } />
                 <main>
                     <header>
                         <h1>
@@ -148,7 +167,7 @@ export default class Scheduler extends Component {
                         <input
                             placeholder = 'Поиск'
                             type = 'search'
-                            value = ''
+                            value = { tasksFilter }
                             onChange = { this._updateTasksFilter }
                         />
                     </header>
