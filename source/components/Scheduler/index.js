@@ -14,12 +14,12 @@ export default class Scheduler extends Component {
         tasksFilter: '',
         isTasksFetching: false,
         tasks: [],
-        filteredTasks:[]
     }
 
     componentDidMount () {
         this._fetchTasksAsync();
     }
+
     _updateTasksFilter = (event) => {
         const { value } = event.target;
 
@@ -99,9 +99,8 @@ export default class Scheduler extends Component {
 
             this.setState(({ tasks }) => ({
                 tasks: tasks.map((task) => task.id === updatedTask.id ?updatedTask : task),
-            }))
+            }));
 
-            this.state.tasks.sort((a, b) => a.completed - b.completed )
             // this._fetchTasksAsync();
         } catch (error) {
             console.log(error);
@@ -147,15 +146,17 @@ export default class Scheduler extends Component {
     render () {
         const { tasks, newTaskMessage, isTasksFetching, tasksFilter } = this.state;
 
-        const tasksJSX = tasks.filter((task) => task.message.indexOf(tasksFilter) !== -1)
+        const tasksJSX = tasks.filter((task) => task.message.toLocaleLowerCase().indexOf(tasksFilter) !== -1)
+            .sort((a, b) => ((a.completed - b.completed) || (b.favorite - a.favorite)))
             .map((task) => (
-            <Task
-                { ...task }
-                key = { task.id }
-                _updateTaskAsync = { this._updateTaskAsync }
-                _removeTaskAsync = { this._removeTaskAsync }
-            />
-        ));
+                <Task
+                    { ...task }
+                    key = { task.id }
+                    _updateTaskAsync = { this._updateTaskAsync }
+                    _removeTaskAsync = { this._removeTaskAsync }
+                />
+            ));
+
         return (
             <section className = { Styles.scheduler }>
                 <Spinner isSpinning = { isTasksFetching } />
@@ -192,7 +193,14 @@ export default class Scheduler extends Component {
                         </div>
                     </section>
                     <footer>
-                        <Checkbox onClick = { this._completeAllTasksAsync } />
+                        <Checkbox
+                            checked = { this._getAllCompleted() }
+                            color1 = '#363636'
+                            color2 = '#fff'
+                            height = { 25 }
+                            width = { 25 }
+                            onClick = { this._completeAllTasksAsync }
+                        />
                         <span className = 'completeAllTasks'>
                             Все задачи выполнены
                         </span>

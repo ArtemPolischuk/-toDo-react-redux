@@ -16,7 +16,7 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-describe.only('Компонент Task:', () => {
+describe('Компонент Task:', () => {
     describe('должен иметь базовую разметку JSX:', () => {
         describe('должен соответствовать снимку разметки', () => {
             expect(result).toMatchSnapshot();

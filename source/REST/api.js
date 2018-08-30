@@ -10,7 +10,6 @@ export const api = {
         });
 
         if (response.status !== 200) {
-            console.log(response);
             throw new Error('Tasks were not delivered');
         }
 
@@ -55,7 +54,7 @@ export const api = {
         }
 
         const { data: updatedTask } = await response.json();
-        console.log('done')
+
         return updatedTask[0];
     },
     async removeTask (id) {
