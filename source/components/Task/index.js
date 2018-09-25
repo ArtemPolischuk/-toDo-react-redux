@@ -3,6 +3,7 @@ import React, { PureComponent, createRef } from 'react';
 
 // Instruments
 import Styles from './styles.m.css';
+// import cx from 'cx';
 import Checkbox from '../../theme/assets/Checkbox';
 import Star from '../../theme/assets/Star';
 import Edit from '../../theme/assets/Edit';
@@ -120,6 +121,10 @@ export default class Task extends PureComponent {
     render () {
         const { completed, favorite } = this.props;
         const { isTaskEditing, newMessage } = this.state;
+
+        // const taskStyles = cx(Styles.task, {
+        //     [Styles.completed]: completed
+        // })
 
         return (
             <li className = { Styles.task }>
