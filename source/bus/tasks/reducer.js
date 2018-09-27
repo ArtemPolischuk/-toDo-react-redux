@@ -22,7 +22,7 @@ export const tasksReducer = (state = initialState, action) => {
             return state.map((task) => task.get('id') === updatedTask.id? fromJS(updatedTask) : task)
 
         case types.COMPLETE_ALL_TASKS:
-            // return state.filter((post) => post.get('id') !== action.payload);
+            return state.map((task) => task.set('completed', true));
 
         default:
             return state;

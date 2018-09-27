@@ -105,11 +105,16 @@ export default class Scheduler extends Component {
         // !task.get('completed')
         const uncompletedTasks = tasks.toJS()
             .filter((task) => !task.completed)
-            .map((task) => task.completed );
+            .map((task) => {
+                task.completed = true;
+
+                return task;
+            } );
+
 
         console.log(uncompletedTasks);
 
-        // actions.completeAllTasksAsync(uncompletedTasks)
+        actions.completeAllTasksAsync(uncompletedTasks);
     }
 
     render () {
