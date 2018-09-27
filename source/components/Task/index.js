@@ -3,7 +3,7 @@ import React, { PureComponent, createRef } from 'react';
 
 // Instruments
 import Styles from './styles.m.css';
-// import cx from 'cx';
+import cx from 'classnames';
 import Checkbox from '../../theme/assets/Checkbox';
 import Star from '../../theme/assets/Star';
 import Edit from '../../theme/assets/Edit';
@@ -48,7 +48,7 @@ export default class Task extends PureComponent {
 
     _updateTask = () => {
         const { newMessage } = this.state;
-        const { message, _updateTaskAsync } = this.props;
+        const { message, actions } = this.props;
 
         if (newMessage === message) {
             this._setTaskEditingState(false);
@@ -58,7 +58,9 @@ export default class Task extends PureComponent {
 
         this._setTaskEditingState(false);
 
-        _updateTaskAsync(this._getTaskShape({ 'message': newMessage }));
+        const updatingTask = this._getTaskShape({ 'message': newMessage });
+
+        actions.updateTaskAsync(updatingTask);
     };
 
     _updateTaskMessageOnClick = () => {
@@ -101,33 +103,37 @@ export default class Task extends PureComponent {
     };
 
     _toggleTaskCompletedState = () => {
-        const { _updateTaskAsync, completed } = this.props;
+        const { actions, completed } = this.props;
 
-        _updateTaskAsync(this._getTaskShape({ 'completed': !completed }));
+        const updatingTask = this._getTaskShape({ 'completed': !completed });
+
+        actions.updateTaskAsync(updatingTask);
     };
 
     _toggleTaskFavoriteState = () => {
-        const { _updateTaskAsync, favorite } = this.props;
+        const { actions, favorite } = this.props;
 
-        _updateTaskAsync(this._getTaskShape({ 'favorite': !favorite }));
+        const updatingTask = this._getTaskShape({ 'favorite': !favorite });
+
+        actions.updateTaskAsync(updatingTask);
     };
 
     _removeTask = () => {
-        const { _removeTaskAsync, id } = this.props;
+        const { actions, id } = this.props;
 
-        _removeTaskAsync(id);
-    }
+        actions.removeTaskAsync(id);
+    };
 
     render () {
-        const { completed, favorite } = this.props;
+        const { completed, favorite, } = this.props;
         const { isTaskEditing, newMessage } = this.state;
 
-        // const taskStyles = cx(Styles.task, {
-        //     [Styles.completed]: completed
-        // })
+        const styles = cx(Styles.task, {
+            [Styles.completed]: completed
+        })
 
         return (
-            <li className = { Styles.task }>
+            <li className = { styles }>
                 <div className = { Styles.content }>
                     <Checkbox
                         checked = { completed }
@@ -171,7 +177,7 @@ export default class Task extends PureComponent {
                         onClick = { this._updateTaskMessageOnClick }
                     />
                     <Remove
-                        className = 'removeTask'
+                        className = { Styles.removeTask }
                         color1 = '#3B8EF3'
                         color2 = '#000'
                         height = { 17 }

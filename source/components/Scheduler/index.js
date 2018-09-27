@@ -1,13 +1,52 @@
 // Core
 import React, { Component } from 'react';
-
+import { Form, Control, actions as actionForm } from 'react-redux-form';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import Spinner from '../Spinner';
 import Task from '../Task';
 import Checkbox from '../../theme/assets/Checkbox';
+
+
 // Instruments
 import Styles from './styles.m.css';
 import { api } from '../../REST';
 
+//Actions
+import {
+    fetchTasksAsync,
+    createTaskAsync,
+    updateTaskAsync,
+    removeTaskAsync,
+    completeAllTasksAsync,
+} from "../../bus/tasks/actions";
+
+const mapStateToProps = (state) => {
+    return {
+        tasks: state.tasks,
+        isFetching: state.ui.isFetching,
+        newTaskMessage: state.form.newTask.message,
+        tasksFilter: state.form.filter.tasksFilter,
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        actions: bindActionCreators({
+            fetchTasksAsync,
+            createTaskAsync,
+            updateTaskAsync,
+            resetForm: actionForm.reset,
+            removeTaskAsync,
+            completeAllTasksAsync,
+        }, dispatch),
+    };
+};
+
+@connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)
 export default class Scheduler extends Component {
     state = {
         newTaskMessage: '',
@@ -17,16 +56,10 @@ export default class Scheduler extends Component {
     }
 
     componentDidMount () {
-        this._fetchTasksAsync();
+        const { actions } = this.props;
+
+        actions.fetchTasksAsync();
     }
-
-    _updateTasksFilter = (event) => {
-        const { value } = event.target;
-
-        this.setState(() => ({
-            tasksFilter: value.toLocaleLowerCase(),
-        }));
-    };
 
     _updateNewTaskMessage = (event) => {
         const { value } = event.target;
@@ -38,8 +71,10 @@ export default class Scheduler extends Component {
 
     _getAllCompleted = () => {
         //returns boolean depends if all tasks are completed
-        return this.state.tasks.every((task) => {
-            return task.completed;
+        const { tasks } = this.props;
+
+        return tasks.every((task) => {
+            return task.get('completed');
         });
     };
 
@@ -49,144 +84,85 @@ export default class Scheduler extends Component {
         }));
     };
 
-    _fetchTasksAsync = async () => {
-        try {
-            this._setTasksFetchingState(true);
+    _createTaskAsync = () => {
+        const { newTaskMessage, actions } = this.props;
 
-            const tasks = await api.fetchTasks();
-
-            this.setState(() => ({
-                tasks,
-            }));
-        } catch (error) {
-            console.log(error);
-        } finally {
-            this._setTasksFetchingState(false);
+        if (newTaskMessage) {
+            actions.createTaskAsync(newTaskMessage);
+            actions.resetForm('forms.newTask.message');
         }
+
+        return null;
     };
 
-    _createTaskAsync = async (event) => {
-        try {
-            const { newTaskMessage } = this.state;
-
-            if (!newTaskMessage.trim()) {
-                return null;
-            }
-
-            if (newTaskMessage.trim()) {
-                event.preventDefault();
-            }
-            this._setTasksFetchingState(true);
-
-            const task = await api.createTask(newTaskMessage);
-
-            this.setState((prevState) => ({
-                tasks: [task, ...prevState.tasks],
-                newTaskMessage: '',
-            }));
-        } catch (error) {
-            console.log(error);
-        } finally {
-            this._setTasksFetchingState(false);
-        }
-    };
-
-    _updateTaskAsync = async (updateTask) => {
-        try {
-            this._setTasksFetchingState(true);
-
-            const updatedTask = await api.updateTask(updateTask);
-
-            this.setState(({ tasks }) => ({
-                tasks: tasks.map((task) => task.id === updatedTask.id ?updatedTask : task),
-            }));
-
-            // this._fetchTasksAsync();
-        } catch (error) {
-            console.log(error);
-        } finally {
-            this._setTasksFetchingState(false);
-        }
-    };
-
-    _removeTaskAsync = async (id) => {
-        try {
-            this._setTasksFetchingState(true);
-
-            await api.removeTask(id);
-
-            this.setState(({ tasks }) => ({
-                tasks: tasks.filter((task) => task.id !== id),
-            }));
-        } catch (error) {
-            console.log(error);
-        } finally {
-            this._setTasksFetchingState(false);
-        }
-    };
     _completeAllTasksAsync = async () => {
-        try {
-            if (this._getAllCompleted()) {
-                return null;
-            }
-            this._setTasksFetchingState(true);
+        const { tasks, actions } = this.props;
 
-            const uncompletedTasks = this.state.tasks.filter((task) => !task.completed);
-
-            uncompletedTasks.map((task) => task.completed = true);
-
-            await api.completeAllTasks(uncompletedTasks);
-
-        } catch (error) {
-            console.log(error);
-        } finally {
-            this._setTasksFetchingState(false);
+        if (this._getAllCompleted()) {
+            return null;
         }
-    };
-    render () {
-        const { tasks, newTaskMessage, isTasksFetching, tasksFilter } = this.state;
 
-        const tasksJSX = tasks.filter((task) => task.message.toLocaleLowerCase().indexOf(tasksFilter) !== -1)
+        // !task.get('completed')
+        const uncompletedTasks = tasks.toJS()
+            .filter((task) => !task.completed)
+            .map((task) => task.completed );
+
+        console.log(uncompletedTasks);
+
+        // actions.completeAllTasksAsync(uncompletedTasks)
+    }
+
+    render () {
+        const { tasks, actions, tasksFilter, isFetching } = this.props;
+
+        const tasksJSX = tasks.filter((task) => task.get('message')
+            .toLocaleLowerCase()
+            .includes(tasksFilter))
             .sort((a, b) => ((a.completed - b.completed) || (b.favorite - a.favorite)))
             .map((task) => (
                 <Task
-                    { ...task }
-                    key = { task.id }
-                    _updateTaskAsync = { this._updateTaskAsync }
-                    _removeTaskAsync = { this._removeTaskAsync }
+                    actions = { actions }
+                    completed = { task.get('completed') }
+                    created = { task.get('created') }
+                    favorite = { task.get('favorite') }
+                    id = { task.get('id') }
+                    key = { task.get('id') }
+                    message = { task.get('message') }
                 />
             ));
 
         return (
             <section className = { Styles.scheduler }>
-                <Spinner isSpinning = { isTasksFetching } />
+                <Spinner isSpinning = { isFetching } />
                 <main>
                     <header>
                         <h1>
                             Планировщик задач
                         </h1>
-                        <input
-                            placeholder = 'Поиск'
-                            type = 'search'
-                            value = { tasksFilter }
-                            onChange = { this._updateTasksFilter }
-                        />
+                        <Form model = 'forms.filter'>
+                            <Control.text
+                                model = 'forms.filter.tasksFilter'
+                                placeholder = 'Поиск'
+                                type = 'search'
+                            />
+                        </Form>
                     </header>
                     <section>
-                        <form onSubmit = { this._createTaskAsync } >
-                            <input
-                                className = 'createTask'
+                        <Form
+                            model = 'forms.newTask'
+                            onSubmit = { this._createTaskAsync }
+                        >
+                            <Control.text
+                                className = { Styles.createTask }
                                 maxLength = { 50 }
-                                placeholder = 'Описaние моей новой задачи'
-                                type = 'text'
-                                value = { newTaskMessage }
-                                onChange = { this._updateNewTaskMessage }
+                                model = 'forms.newTask.message'
+                                placeholder = 'Описание моей новой задачи'
                             />
                             <button>
                                 Добавить задачу
                             </button>
-                        </form>
-                        <div className = 'overlay'>
+                        </Form>
+                        <div className = { Styles.overlay }>
                             <ul>
                                 { tasksJSX }
                             </ul>

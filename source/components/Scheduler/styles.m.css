@@ -80,6 +80,11 @@
                     margin-right: 22px;
                 }
 
+                & textarea {
+                    width: 100%;
+                    margin-right: 22px;
+                }
+
                 & button {
                     min-width: 215px;
                     height: 42px;
